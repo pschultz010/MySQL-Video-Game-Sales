@@ -1,0 +1,63 @@
+/* How many games were made for WiiU after 2015 */
+/* Join, filter, aggregate, linking*/
+/* wiiu_games_after_2015 */
+SELECT count(g.game_name) AS 'Number of Games', p.platform_name, g.date_published
+FROM platforms_games_join pg
+JOIN platform p
+	USING (platform_id)
+JOIN games g
+	USING (game_id)
+WHERE g.date_published > 2015
+	AND p.platform_name = 'WiiU';
+
+/* What top 5 publishers had the highest NA sales */
+/* Join, aggregate*/
+/* top_pub_high_na */
+SELECT publisher_name, concat('$',max(na_sales),'M') as NA_Sales 
+FROM games g
+JOIN publishers p
+	USING(publisher_id)
+GROUP BY publisher_name
+ORDER BY na_sales DESC
+LIMIT 5;
+
+/* How many games are in the top EU earning genres for Activision */
+/* Join, aggregate, subquery, filter */
+/* top_eu_earn_activision */
+SELECT genre_name, CONCAT('$',(round(sum(eu_sales),2)),'M') as total_eu_sales,count(game_id) AS num_games
+FROM games
+JOIN genre
+	USING (genre_id)
+JOIN (SELECT publisher_name
+		FROM publishers
+        WHERE publisher_name = 'Activision') pn
+GROUP BY genre_name
+ORDER BY sum(eu_sales) DESC, num_games DESC;
+
+/* Who was the developer(s) having the highest selling game in north america duing 2016 */
+/* Join, filter */
+/* high_dev_games_na2016 */
+SELECT game_name, developer_name, concat('$',na_sales,'M') as 'NA Sales'
+FROM games
+JOIN developers
+	USING (developer_team_id)
+WHERE date_published = 2016
+ORDER by na_sales DESC;
+
+/* What top 5 publishers made the most games for kids (Rated E or E10+) */
+/* Join, filter, aggregate */
+/* top_pub_kids_game */
+SELECT publisher_name, count(game_id) as num_games
+FROM games
+JOIN publishers
+	USING (publisher_id)
+JOIN ratings
+	USING (rating_id)
+WHERE rating = 'E'
+	OR rating = 'E10+'
+GROUP BY publisher_name
+ORDER BY num_games DESC
+LIMIT 5;
+
+
+
